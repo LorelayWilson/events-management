@@ -1,0 +1,117 @@
+<div class="event-detail-container">
+  <!-- Loading state -->
+  <div *ngIf="loading" class="loading">
+    Loading event details...
+  </div>
+
+  <!-- Error state -->
+  <div *ngIf="error" class="error">
+    <h3>Error</h3>
+    <p>{{ error }}</p>
+    <button class="btn btn-primary" (click)="goBack()">Back to Events</button>
+  </div>
+
+  <!-- Event details -->
+  <div *ngIf="event && !loading && !error" class="event-detail">
+    <div class="event-header">
+      <div class="event-title-section">
+        <h1>{{ event.title }}</h1>
+        <div class="event-meta">
+          <span class="event-date">📅 {{ event.eventDate | date:'full' }}</span>
+          <span class="event-creator">👤 Created by {{ event.createdByName }}</span>
+          <span *ngIf="event.isPrivate" class="private-badge">🔒 Private Event</span>
+        </div>
+      </div>
+      
+      <div class="event-actions">
+        <button class="btn btn-secondary" (click)="goBack()">
+          ← Back to Events
+        </button>
+        
+        <button *ngIf="canRegister()" 
+                class="btn btn-success"
+                (click)="registerForEvent()">
+          Register for Event
+        </button>
+        
+        <span *ngIf="event.isRegistered" class="registered-badge">
+          ✅ You're Registered
+        </span>
+        
+        <span *ngIf="isEventFull() && !event.isRegistered" class="full-badge">
+          🚫 Event Full
+        </span>
+        
+        <span *ngIf="isEventPast()" class="past-badge">
+          ⏰ Event Ended
+        </span>
+      </div>
+    </div>
+
+    <div class="event-content">
+      <div class="event-main">
+        <div class="event-description">
+          <h3>Description</h3>
+          <p>{{ event.description }}</p>
+        </div>
+
+        <div class="event-categories" *ngIf="event.categories.length > 0">
+          <h3>Categories</h3>
+          <div class="categories-list">
+            <span *ngFor="let category of event.categories" 
+                  class="category-badge"
+                  [style.background-color]="category.color">
+              {{ category.name }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-sidebar">
+        <div class="event-info-card">
+          <h3>Event Information</h3>
+          
+          <div class="info-item">
+            <strong>Date & Time:</strong>
+            <span>{{ event.eventDate | date:'medium' }}</span>
+          </div>
+          
+          <div class="info-item">
+            <strong>Capacity:</strong>
+            <span>{{ event.registrationsCount }} / {{ event.capacity }} registered</span>
+          </div>
+          
+          <div class="info-item">
+            <strong>Available Spots:</strong>
+            <span [class.text-danger]="getAvailableSpots() <= 5">
+              {{ getAvailableSpots() }} remaining
+            </span>
+          </div>
+          
+          <div class="info-item">
+            <strong>Event Type:</strong>
+            <span>{{ event.isPrivate ? 'Private' : 'Public' }}</span>
+          </div>
+          
+          <div class="info-item">
+            <strong>Created:</strong>
+            <span>{{ event.createdAt | date:'short' }}</span>
+          </div>
+
+          <!-- Progress bar for capacity -->
+          <div class="capacity-progress">
+            <label>Registration Progress</label>
+            <div class="progress">
+              <div class="progress-bar" 
+                   [style.width.%]="(event.registrationsCount / event.capacity) * 100"
+                   [class.bg-danger]="isEventFull()"
+                   [class.bg-warning]="getAvailableSpots() <= 5 && !isEventFull()"
+                   [class.bg-success]="getAvailableSpots() > 5">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

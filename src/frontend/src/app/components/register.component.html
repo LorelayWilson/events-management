@@ -1,0 +1,69 @@
+<div class="register-container">
+  <div class="register-card">
+    <h2>Create Account</h2>
+    
+    <form (ngSubmit)="onSubmit()" #registerForm="ngForm">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="firstName">First Name:</label>
+          <input type="text" 
+                 id="firstName"
+                 name="firstName"
+                 [(ngModel)]="registerData.firstName"
+                 required
+                 class="form-control"
+                 placeholder="Enter your first name">
+        </div>
+
+        <div class="form-group">
+          <label for="lastName">Last Name:</label>
+          <input type="text" 
+                 id="lastName"
+                 name="lastName"
+                 [(ngModel)]="registerData.lastName"
+                 required
+                 class="form-control"
+                 placeholder="Enter your last name">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email:</label>
+        <input type="email" 
+               id="email"
+               name="email"
+               [(ngModel)]="registerData.email"
+               required
+               email
+               class="form-control"
+               placeholder="Enter your email">
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password:</label>
+        <input type="password" 
+               id="password"
+               name="password"
+               [(ngModel)]="registerData.password"
+               required
+               class="form-control"
+               placeholder="Enter your password">
+      </div>
+
+      <div *ngIf="error" class="alert alert-danger">
+        {{ error }}
+      </div>
+
+      <button type="submit" 
+              class="btn btn-primary btn-block"
+              [disabled]="loading || registerForm.invalid">
+        <span *ngIf="loading">Creating Account...</span>
+        <span *ngIf="!loading">Create Account</span>
+      </button>
+    </form>
+
+    <div class="register-footer">
+      <p>Already have an account? <a routerLink="/login">Login here</a></p>
+    </div>
+  </div>
+</div>

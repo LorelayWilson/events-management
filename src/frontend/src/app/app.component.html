@@ -1,0 +1,27 @@
+<!-- RESPONSIVE ERROR: Not responsive navbar -->
+<nav class="navbar navbar-expand navbar-dark bg-primary">
+  <div class="container">
+    <a class="navbar-brand" routerLink="/">🎉 Events System</a>
+    
+    <div class="navbar-nav me-auto">
+      <a class="nav-link" routerLink="/events" routerLinkActive="active">Events</a>
+    </div>
+    
+    <div class="navbar-nav ms-auto" *ngIf="!authService.isLoggedIn()">
+      <a class="nav-link" routerLink="/login">Login</a>
+      <a class="nav-link" routerLink="/register">Register</a>
+    </div>
+    
+    <div class="navbar-nav ms-auto" *ngIf="authService.isLoggedIn()">
+      <span class="navbar-text me-3">
+        Welcome, {{ authService.getCurrentUser()?.firstName }}!
+      </span>
+      <a class="nav-link" routerLink="/create-event">Create Event</a>
+      <button class="btn btn-outline-light btn-sm" (click)="logout()">Logout</button>
+    </div>
+  </div>
+</nav>
+
+<div class="container mt-4">
+  <router-outlet></router-outlet>
+</div>

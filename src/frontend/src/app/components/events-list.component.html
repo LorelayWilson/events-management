@@ -1,0 +1,68 @@
+<div class="events-container">
+  <div class="header-section">
+    <h1>Events</h1>
+    
+    <!-- Category filter -->
+    <div class="filter-section">
+      <label for="categoryFilter">Filter by Category:</label>
+      <select id="categoryFilter" 
+              [(ngModel)]="selectedCategoryId" 
+              (change)="onCategoryChange()"
+              class="form-select">
+        <option [value]="null">All Categories</option>
+        <option *ngFor="let category of categories" [value]="category.id">
+          {{ category.name }}
+        </option>
+      </select>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="loading">
+    Loading events...
+  </div>
+
+  <div *ngIf="error" class="error">
+    {{ error }}
+  </div>
+
+  <div class="events-grid" *ngIf="!loading && !error">
+    <div *ngFor="let event of events" class="event-card">
+      <div class="event-header">
+        <h3 class="event-title">{{ event.title }}</h3>
+        <span class="event-date">{{ event.eventDate | date:'short' }}</span>
+      </div>
+      
+      <div class="event-body">
+        <p class="event-description">{{ event.description }}</p>
+        
+        <div class="event-info">
+          <span class="capacity">Capacity: {{ event.registrationsCount }}/{{ event.capacity }}</span>
+          <span class="creator">By: {{ event.createdByName }}</span>
+          <span *ngIf="event.isPrivate" class="private-badge">Private</span>
+        </div>
+        
+        <div class="event-categories">
+          <span *ngFor="let category of event.categories" 
+                class="category-badge"
+                [style.background-color]="category.color">
+            {{ category.name }}
+          </span>
+        </div>
+      </div>
+      
+      <div class="event-actions">
+        <a [routerLink]="['/events', event.id]" class="btn btn-primary btn-sm">View Details</a>
+        <button *ngIf="authService.isLoggedIn() && !event.isRegistered" 
+                (click)="registerForEvent(event.id)"
+                class="btn btn-success btn-sm">
+          Register
+        </button>
+        <span *ngIf="event.isRegistered" class="registered-badge">Registered</span>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="events.length === 0 && !loading && !error" class="no-events">
+    No events found.
+  </div>
+</div>

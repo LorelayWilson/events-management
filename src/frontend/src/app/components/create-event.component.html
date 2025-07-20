@@ -1,0 +1,117 @@
+<div class="create-event-container">
+  <div class="create-event-card">
+    <h2>Create New Event</h2>
+    
+    <form (ngSubmit)="onSubmit()" #eventForm="ngForm">
+      <div class="form-group">
+        <label for="title">Event Title *</label>
+        <input type="text" 
+               id="title"
+               name="title"
+               [(ngModel)]="eventData.title"
+               required
+               class="form-control"
+               placeholder="Enter event title">
+      </div>
+
+      <div class="form-group">
+        <label for="description">Description *</label>
+        <textarea id="description"
+                  name="description"
+                  [(ngModel)]="eventData.description"
+                  required
+                  class="form-control"
+                  rows="4"
+                  placeholder="Describe your event"></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="eventDate">Event Date *</label>
+          <input type="datetime-local" 
+                 id="eventDate"
+                 name="eventDate"
+                 [(ngModel)]="eventData.eventDate"
+                 required
+                 class="form-control">
+        </div>
+
+        <div class="form-group">
+          <label for="capacity">Capacity *</label>
+          <input type="number" 
+                 id="capacity"
+                 name="capacity"
+                 [(ngModel)]="eventData.capacity"
+                 required
+                 min="1"
+                 class="form-control"
+                 placeholder="Max attendees">
+        </div>
+      </div>
+
+      <!-- Hidden field for createdById -->
+      <input type="hidden" 
+             name="createdById"
+             [(ngModel)]="eventData.createdById">
+
+      <div class="form-group">
+        <label class="form-label">Event Visibility</label>
+        <div class="toggle-container">
+          <button type="button" 
+                  class="btn toggle-btn"
+                  [class.active]="!eventData.isPrivate"
+                  (click)="setEventVisibility(false)">
+            <span class="toggle-icon">🌐</span>
+            Public
+          </button>
+          <button type="button" 
+                  class="btn toggle-btn"
+                  [class.active]="eventData.isPrivate"
+                  (click)="setEventVisibility(true)">
+            <span class="toggle-icon">🔒</span>
+            Private
+          </button>
+        </div>
+        <small class="text-muted">
+          {{ eventData.isPrivate ? 'Only you can see this event' : 'Everyone can see this event' }}
+        </small>
+      </div>
+
+      <div class="form-group">
+        <label>Categories</label>
+        <div class="categories-grid">
+          <div *ngFor="let category of categories" class="category-checkbox">
+            <input type="checkbox" 
+                   [id]="'category-' + category.id"
+                   [checked]="isCategorySelected(category.id)"
+                   (change)="onCategoryChange(category.id, $any($event.target).checked)">
+            <label [for]="'category-' + category.id" 
+                   class="category-label"
+                   [style.border-color]="category.color">
+              <span class="category-color" [style.background-color]="category.color"></span>
+              {{ category.name }}
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="error" class="alert alert-danger">
+        {{ error }}
+      </div>
+
+      <div class="form-actions">
+        <button type="button" 
+                class="btn btn-secondary"
+                (click)="router.navigate(['/events'])">
+          Cancel
+        </button>
+        <button type="submit" 
+                class="btn btn-primary"
+                [disabled]="loading || eventForm.invalid">
+          <span *ngIf="loading">Creating...</span>
+          <span *ngIf="!loading">Create Event</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
