@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { EventService, CreateEventDto, CategoryDto } from '../services/event.service';
-import { AuthService } from '../services/auth.service';
+import { EventService, CreateEventDto, CategoryDto } from '../../services/event.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-create-event',

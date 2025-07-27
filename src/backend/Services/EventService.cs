@@ -1,14 +1,15 @@
-using Microsoft.EntityFrameworkCore;
 using EventsSystem.Data;
-using EventsSystem.Models;
 using EventsSystem.DTOs;
+using EventsSystem.Models;
+using Microsoft.EntityFrameworkCore;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace EventsSystem.Services
 {
     public interface IEventService
     {
-        Task<List<EventDto>> GetAllEventsAsync(string? currentUserId = null);
-        Task<List<EventDto>> GetEventsByCategoryAsync(int categoryId, string? currentUserId = null);
+        Task<PaginatedResult<EventDto>> GetAllEventsAsync(string? currentUserId = null, int page = 1, int pageSize = 20);
+        Task<PaginatedResult<EventDto>> GetEventsByCategoryAsync(int categoryId, string? currentUserId = null, int page = 1, int pageSize = 20);
         Task<EventDto?> GetEventByIdAsync(int id, string? currentUserId = null);
         Task<List<CategoryDto>> GetCategoriesAsync();
         Task<EventDto> CreateEventAsync(CreateEventDto createEventDto, string? currentUserId = null);
@@ -26,36 +27,91 @@ namespace EventsSystem.Services
             _logger = logger;
         }
 
-        public async Task<List<EventDto>> GetAllEventsAsync(string? currentUserId = null)
+        public async Task<PaginatedResult<EventDto>> GetAllEventsAsync(string? currentUserId = null, int page = 1, int pageSize = 20)
         {
-            var events = await _context.Events
+            var query = _context.Events
+                .AsNoTracking()
                 .Include(e => e.CreatedBy)
                 .Include(e => e.Registrations)
-                .Include(e => e.EventCategories)
-                    .ThenInclude(ec => ec.Category)
-                .ToListAsync();
+                .Include(e => e.EventCategories).ThenInclude(ec => ec.Category)
+                .AsQueryable();
 
-            return events.Select(e => MapToEventDto(e, currentUserId)).ToList();
-        }
-
-        public async Task<List<EventDto>> GetEventsByCategoryAsync(int categoryId, string? currentUserId = null)
-        {
-            var eventEntities = await _context.Events
-                .Include(e => e.CreatedBy)
-                .Where(e => e.EventCategories.Any(ec => ec.CategoryId == categoryId))
-                .ToListAsync();
-
-            var events = new List<EventDto>();
-
-            foreach (var eventEntity in eventEntities)
+            // Filter out private events unless the current user has access
+            if (string.IsNullOrEmpty(currentUserId))
             {
-                var eventDto = await MapToEventDtoWithCategoryIncluded(eventEntity, currentUserId);
-                events.Add(eventDto);
+                // If no user is provided, only include public events
+                query = query.Where(e => !e.IsPrivate);
+            }
+            else
+            {
+                // Include public events or events where the user is the creator or already registered
+                query = query.Where(e => !e.IsPrivate ||
+                    e.CreatedById == currentUserId ||
+                    e.Registrations.Any(r => r.UserId == currentUserId));
             }
 
-            return events;
+            // Count BEFORE pagination
+            var totalCount = await query.CountAsync();
+
+            // Pagination
+            var events = await query
+                .OrderByDescending(e => e.EventDate)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var dtos = events.Select(e => MapToEventDto(e, currentUserId)).ToList();
+
+            return new PaginatedResult<EventDto>
+            {
+                Items = dtos,
+                TotalCount = totalCount
+            };
         }
 
+        public async Task<PaginatedResult<EventDto>> GetEventsByCategoryAsync(int categoryId, string? currentUserId = null, int page = 1, int pageSize = 20)
+        {
+            var query = _context.Events
+                .AsNoTracking()
+                .Include(e => e.CreatedBy)
+                .Include(e => e.Registrations)
+                .Include(e => e.EventCategories).ThenInclude(ec => ec.Category)
+                .Where(e => e.EventCategories.Any(ec => ec.CategoryId == categoryId))
+                .AsQueryable();
+
+            // Filter out private events unless the current user has access
+            if (string.IsNullOrEmpty(currentUserId))
+            {
+                // If no user is provided, only include public events
+                query = query.Where(e => !e.IsPrivate);
+            }
+            else
+            {
+                // Include public events or events where the user is the creator or already registered
+                query = query.Where(e => !e.IsPrivate ||
+                    e.CreatedById == currentUserId ||
+                    e.Registrations.Any(r => r.UserId == currentUserId));
+            }
+            // Count BEFORE pagination
+            var totalCount = await query.CountAsync();
+
+            // Pagination
+            var events = await query
+                .OrderByDescending(e => e.EventDate)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            // Directly map using Select and await if mapping is async
+            var tasks = events.Select(e => MapToEventDtoWithCategoryIncluded(e, currentUserId));
+            var dtos = await Task.WhenAll(tasks).ContinueWith(t => t.Result.ToList());
+
+            return new PaginatedResult<EventDto>
+            {
+                Items = dtos,
+                TotalCount = totalCount
+            };
+        }
         private async Task<EventDto> MapToEventDtoWithCategoryIncluded(Event eventEntity, string? currentUserId)
         {
             var registrations = await _context.Registrations
@@ -99,18 +155,31 @@ namespace EventsSystem.Services
         public async Task<EventDto?> GetEventByIdAsync(int id, string? currentUserId = null)
         {
             var eventEntity = await _context.Events
+                .AsNoTracking()
                 .Include(e => e.CreatedBy)
                 .Include(e => e.Registrations)
-                .Include(e => e.EventCategories)
-                    .ThenInclude(ec => ec.Category)
+                .Include(e => e.EventCategories).ThenInclude(ec => ec.Category)
                 .FirstOrDefaultAsync(e => e.Id == id);
 
-            return eventEntity != null ? MapToEventDto(eventEntity, currentUserId) : null;
+            if (eventEntity == null)
+                return null;
+
+            // Exclude private events unless the current user is the creator or registered
+            if (eventEntity.IsPrivate &&
+                (string.IsNullOrEmpty(currentUserId) ||
+                 (eventEntity.CreatedById != currentUserId &&
+                  !eventEntity.Registrations.Any(r => r.UserId == currentUserId))))
+            {
+                return null;
+            }
+
+            return MapToEventDto(eventEntity, currentUserId);
         }
+
 
         public async Task<List<CategoryDto>> GetCategoriesAsync()
         {
-            var categories = await _context.Categories.ToListAsync();
+            var categories = await _context.Categories.AsNoTracking().ToListAsync();
             return categories.Select(c => new CategoryDto
             {
                 Id = c.Id,
@@ -154,6 +223,26 @@ namespace EventsSystem.Services
             var userId = registerDto.UserId ?? currentUserId;
             
             if (string.IsNullOrEmpty(userId))
+            {
+                return false;
+            }
+
+            var eventEntity = await _context.Events
+                .Include(e => e.Registrations)
+                .FirstOrDefaultAsync(e => e.Id == registerDto.EventId);
+
+            if (eventEntity == null)
+            {
+                _logger.LogWarning("Attempt to register for non-existent event {EventId}", registerDto.EventId);
+                return false;
+            }
+            // Prevent duplicate registrations
+            if (eventEntity.Registrations.Any(r => r.UserId == userId))
+            {
+                return false;
+            }
+            // Event is full
+            if (eventEntity.Capacity > 0 && eventEntity.Registrations.Count >= eventEntity.Capacity)
             {
                 return false;
             }

@@ -564,3 +564,4 @@ Thumbs.db
 *.xz
 *.7z
 *.rar
+src/frontend/.vscode/launch.json

@@ -1,4 +1,3 @@
-<!-- RESPONSIVE ERROR: Not responsive navbar -->
 <nav class="navbar navbar-expand navbar-dark bg-primary">
   <div class="container">
     <a class="navbar-brand" routerLink="/">🎉 Events System</a>
@@ -7,16 +6,24 @@
       <a class="nav-link" routerLink="/events" routerLinkActive="active">Events</a>
     </div>
     
-    <div class="navbar-nav ms-auto" *ngIf="!authService.isLoggedIn()">
+    <!-- Search Component -->
+    <div class="navbar-nav mx-auto">
+      <app-search (searchChange)="onSearchChange($event)"></app-search>
+    </div>
+    
+    <div class="navbar-nav ms-auto d-flex align-items-center" *ngIf="!authService.isLoggedIn()">
       <a class="nav-link" routerLink="/login">Login</a>
       <a class="nav-link" routerLink="/register">Register</a>
     </div>
     
-    <div class="navbar-nav ms-auto" *ngIf="authService.isLoggedIn()">
+    <div class="navbar-nav ms-auto d-flex align-items-center" *ngIf="authService.isLoggedIn()">
       <span class="navbar-text me-3">
         Welcome, {{ authService.getCurrentUser()?.firstName }}!
       </span>
       <a class="nav-link" routerLink="/create-event">Create Event</a>
+      <a class="nav-link" routerLink="/profile" routerLinkActive="active">
+        <i class="fas fa-user"></i> My Profile
+      </a>
       <button class="btn btn-outline-light btn-sm" (click)="logout()">Logout</button>
     </div>
   </div>

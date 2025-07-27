@@ -1,6 +1,8 @@
 .container {
-  width: 1200px;
+  width: 100%;
+  max-width: 1200px;
   margin: 0 auto;
+  padding: 0 15px;
 }
 
 .navbar-brand {
@@ -10,11 +12,16 @@
 
 .navbar-text {
   color: white !important;
+  margin: 0;
+  display: flex;
+  align-items: center;
 }
 
 .nav-link {
   margin-right: 15px;
   font-size: 16px;
+  display: flex;
+  align-items: center;
 }
 
 .btn {
@@ -23,4 +30,77 @@
 }
 
 @media (max-width: 768px) {
+  .container {
+    padding: 0 10px;
+  }
+
+  .nav-link {
+    margin-right: 8px;
+  }
+
+  .btn {
+    width: auto;
+  }
+  
+  .navbar-brand {
+    font-size: 20px;
+  }
+  
+  .navbar-text {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 576px) {
+  .navbar-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 5px;
+    justify-content: flex-end;
+  }
+  
+  .nav-link {
+    margin-right: 5px;
+    font-size: 14px;
+  }
+  
+  .navbar-text {
+    font-size: 12px;
+    margin-right: 10px !important;
+  }
+  
+  .btn {
+    font-size: 12px;
+    padding: 4px 8px;
+  }
+}
+
+@media (max-width: 340px) {
+  .container {
+    padding: 0 5px;
+  }
+  
+  .navbar-brand {
+    font-size: 18px;
+  }
+  
+  .navbar-nav {
+    gap: 3px;
+    justify-content: flex-end;
+  }
+  
+  .nav-link {
+    margin-right: 3px;
+    font-size: 12px;
+  }
+  
+  .navbar-text {
+    font-size: 11px;
+    margin-right: 5px !important;
+  }
+  
+  .btn {
+    font-size: 11px;
+    padding: 3px 6px;
+  }
 }

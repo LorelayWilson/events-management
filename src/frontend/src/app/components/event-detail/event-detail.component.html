@@ -24,27 +24,37 @@
       </div>
       
       <div class="event-actions">
-        <button class="btn btn-secondary" (click)="goBack()">
-          ← Back to Events
-        </button>
+        <div class="main-actions">
+          <button class="btn btn-secondary" (click)="goBack()">
+            ← Back to Events
+          </button>
+          
+          <button *ngIf="canRegister()" 
+                  class="btn btn-success"
+                  (click)="registerForEvent()">
+            Register for Event
+          </button>
+          
+          <span *ngIf="event.isRegistered" class="registered-badge">
+            ✅ You're Registered
+          </span>
+          
+          <span *ngIf="isEventFull() && !event.isRegistered" class="full-badge">
+            🚫 Event Full
+          </span>
+          
+          <span *ngIf="isEventPast()" class="past-badge">
+            ⏰ Event Ended
+          </span>
+        </div>
         
-        <button *ngIf="canRegister()" 
-                class="btn btn-success"
-                (click)="registerForEvent()">
-          Register for Event
-        </button>
-        
-        <span *ngIf="event.isRegistered" class="registered-badge">
-          ✅ You're Registered
-        </span>
-        
-        <span *ngIf="isEventFull() && !event.isRegistered" class="full-badge">
-          🚫 Event Full
-        </span>
-        
-        <span *ngIf="isEventPast()" class="past-badge">
-          ⏰ Event Ended
-        </span>
+        <div class="export-buttons">
+          <app-export-buttons 
+            label="Export Event"
+            (exportCsv)="exportEventToCSV()"
+            (exportExcel)="exportEventToExcel()">
+          </app-export-buttons>
+        </div>
       </div>
     </div>
 

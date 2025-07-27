@@ -20,20 +20,22 @@ namespace EventsSystem.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<EventDto>>> GetEvents()
+        public async Task<ActionResult<PaginatedResult<EventDto>>> GetEvents([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
         {
-            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var events = await _eventService.GetAllEventsAsync(currentUserId);
+            var currentUserId = User.Identity?.IsAuthenticated == true
+                            ? User.FindFirstValue(ClaimTypes.NameIdentifier)
+                            : null;
+            var events = await _eventService.GetAllEventsAsync(currentUserId, page, pageSize);
             return Ok(events);
         }
 
         [HttpGet("categories/{categoryId}")]
-        public async Task<ActionResult<List<EventDto>>> GetEventsByCategory(int categoryId)
+        public async Task<ActionResult<PaginatedResult<EventDto>>> GetEventsByCategory(int categoryId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
         {
             var currentUserId = User.Identity?.IsAuthenticated == true 
                 ? User.FindFirstValue(ClaimTypes.NameIdentifier) 
                 : null;
-            var events = await _eventService.GetEventsByCategoryAsync(categoryId, currentUserId);
+            var events = await _eventService.GetEventsByCategoryAsync(categoryId, currentUserId, page, pageSize);
             return Ok(events);
         }
 
@@ -46,7 +48,7 @@ namespace EventsSystem.Controllers
                 currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             }
             
-            var eventDto = await _eventService.GetEventByIdAsync(id, currentUserId: null);
+            var eventDto = await _eventService.GetEventByIdAsync(id, currentUserId);
             
             if (eventDto == null)
             {

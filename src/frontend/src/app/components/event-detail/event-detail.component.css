@@ -66,8 +66,21 @@
 .event-actions {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 15px;
   align-items: flex-end;
+}
+
+.main-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.export-buttons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }
 
 .event-content {
@@ -185,6 +198,11 @@
   transition: all 0.2s;
 }
 
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
 .btn-primary {
   background-color: #007bff;
   color: white;
@@ -196,6 +214,28 @@
 }
 
 .btn-success {
+  background-color: #28a745;
+  color: white;
+}
+
+.btn-outline-primary {
+  background-color: transparent;
+  color: #007bff;
+  border: 1px solid #007bff;
+}
+
+.btn-outline-success {
+  background-color: transparent;
+  color: #28a745;
+  border: 1px solid #28a745;
+}
+
+.btn-outline-primary:hover {
+  background-color: #007bff;
+  color: white;
+}
+
+.btn-outline-success:hover {
   background-color: #28a745;
   color: white;
 }
@@ -236,6 +276,15 @@
   
   .event-actions {
     align-items: stretch;
+  }
+  
+  .main-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .export-buttons {
+    justify-content: center;
   }
   
   .event-title-section h1 {

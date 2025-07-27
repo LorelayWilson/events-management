@@ -1,0 +1,264 @@
+<div class="user-profile-container">
+  <!-- Profile Header -->
+  <div class="profile-header">
+    <div class="user-info">
+      <div class="user-avatar">
+        <i class="fas fa-user-circle"></i>
+      </div>
+      <div class="user-details">
+        <h1>{{ currentUser?.firstName }} {{ currentUser?.lastName }}</h1>
+        <p>{{ currentUser?.email }}</p>
+      </div>
+    </div>
+    <div class="profile-actions">
+      <button class="btn btn-primary" (click)="onCreateEvent()">
+        <i class="fas fa-plus"></i> Create Event
+      </button>
+      <button class="btn btn-secondary" (click)="logout()">
+        <i class="fas fa-sign-out-alt"></i> Logout
+      </button>
+    </div>
+  </div>
+
+  <!-- Navigation Tabs -->
+  <div class="tabs-container">
+    <div class="tabs">
+      <button 
+        class="tab-button" 
+        [class.active]="activeTab === 'my-events'"
+        (click)="onTabChange('my-events')">
+        <i class="fas fa-calendar-plus"></i>
+        My Events ({{ myEventsTotalCount }})
+      </button>
+      <button 
+        class="tab-button" 
+        [class.active]="activeTab === 'public-events'"
+        (click)="onTabChange('public-events')">
+        <i class="fas fa-calendar-alt"></i>
+        Public Events ({{ publicEventsTotalCount }})
+      </button>
+      <button 
+        class="tab-button" 
+        [class.active]="activeTab === 'registered-events'"
+        (click)="onTabChange('registered-events')">
+        <i class="fas fa-calendar-check"></i>
+        Registered Events ({{ registeredEventsTotalCount }})
+      </button>
+    </div>
+  </div>
+
+  <!-- Tab Content -->
+  <div class="tab-content">
+    <!-- My Events -->
+    <div *ngIf="activeTab === 'my-events'" class="events-section">
+      <div class="section-header">
+        <h2>My Created Events</h2>
+        <p>Events that you have created and manage</p>
+        
+        <!-- Export buttons for My Events -->
+        <app-export-buttons 
+          *ngIf="myEventsTotalCount > 0"
+          label="Export My Events"
+          (exportCsv)="exportMyEventsToCSV()"
+          (exportExcel)="exportMyEventsToExcel()">
+        </app-export-buttons>
+      </div>
+      
+      <div *ngIf="allEventsLoading" class="loading">
+        <i class="fas fa-spinner fa-spin"></i> Loading events...
+      </div>
+      
+      <div *ngIf="!allEventsLoading && myEvents.length === 0" class="empty-state">
+        <i class="fas fa-calendar-plus"></i>
+        <h3>You haven't created any events yet</h3>
+        <p>Create your first event to start organizing</p>
+        <button class="btn btn-primary" (click)="onCreateEvent()">
+          Create my first event
+        </button>
+      </div>
+      
+      <div *ngIf="!allEventsLoading && myEvents.length > 0" class="events-grid">
+        <div *ngFor="let event of myEvents" class="event-card my-event" (click)="onEventClick(event.id)">
+          <div class="event-header">
+            <h3>{{ event.title }}</h3>
+            <span class="event-status created">Created by you</span>
+          </div>
+          <p class="event-description">{{ event.description }}</p>
+          <div class="event-details">
+            <div class="event-date">
+              <i class="fas fa-clock"></i>
+              {{ formatDate(event.eventDate) }}
+            </div>
+            <div class="event-capacity">
+              <i class="fas fa-users"></i>
+              {{ event.registrationsCount }}/{{ event.capacity }} registered
+            </div>
+            <div class="event-privacy">
+              <i class="fas" [class.fa-lock]="event.isPrivate" [class.fa-globe]="!event.isPrivate"></i>
+              {{ event.isPrivate ? 'Private' : 'Public' }}
+            </div>
+          </div>
+          <div class="event-categories" *ngIf="event.categories.length > 0">
+            <span *ngFor="let category of event.categories" 
+                  class="category-tag" 
+                  [style.background-color]="category.color">
+              {{ category.name }}
+            </span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Pagination for my events -->
+      <app-pagination 
+        *ngIf="!allEventsLoading && myEvents.length > 0"
+        [currentPage]="myEventsPage"
+        [totalItems]="myEventsTotalCount"
+        [pageSize]="myEventsPageSize"
+        (pageChange)="onMyEventsPageChange($event)">
+      </app-pagination>
+    </div>
+
+    <!-- Public Events -->
+    <div *ngIf="activeTab === 'public-events'" class="events-section">
+      <div class="section-header">
+        <h2>Public Events</h2>
+        <p>Public events created by other users</p>
+        
+        <!-- Export buttons for Public Events -->
+        <app-export-buttons 
+          *ngIf="publicEventsTotalCount > 0"
+          label="Export Public Events"
+          (exportCsv)="exportPublicEventsToCSV()"
+          (exportExcel)="exportPublicEventsToExcel()">
+        </app-export-buttons>
+      </div>
+      
+      <div *ngIf="allEventsLoading" class="loading">
+        <i class="fas fa-spinner fa-spin"></i> Loading events...
+      </div>
+      
+      <div *ngIf="!allEventsLoading && publicEvents.length === 0" class="empty-state">
+        <i class="fas fa-calendar-alt"></i>
+        <h3>No public events available</h3>
+        <p>Public events will appear here when other users create them</p>
+      </div>
+      
+      <div *ngIf="!allEventsLoading && publicEvents.length > 0" class="events-grid">
+        <div *ngFor="let event of publicEvents" class="event-card public-event" (click)="onEventClick(event.id)">
+          <div class="event-header">
+            <h3>{{ event.title }}</h3>
+            <span class="event-status public">Public</span>
+          </div>
+          <p class="event-description">{{ event.description }}</p>
+          <div class="event-details">
+            <div class="event-date">
+              <i class="fas fa-clock"></i>
+              {{ formatDate(event.eventDate) }}
+            </div>
+            <div class="event-creator">
+              <i class="fas fa-user"></i>
+              {{ event.createdByName }}
+            </div>
+            <div class="event-capacity">
+              <i class="fas fa-users"></i>
+              {{ event.registrationsCount }}/{{ event.capacity }} registered
+            </div>
+          </div>
+          <div class="event-categories" *ngIf="event.categories.length > 0">
+            <span *ngFor="let category of event.categories" 
+                  class="category-tag" 
+                  [style.background-color]="category.color">
+              {{ category.name }}
+            </span>
+          </div>
+          <div class="event-actions">
+            <button *ngIf="!event.isRegistered" class="btn btn-success btn-sm">
+              <i class="fas fa-plus"></i> Register
+            </button>
+            <span *ngIf="event.isRegistered" class="registered-badge">
+              <i class="fas fa-check"></i> Registered
+            </span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Pagination for public events -->
+      <app-pagination 
+        *ngIf="!allEventsLoading && publicEvents.length > 0"
+        [currentPage]="publicEventsPage"
+        [totalItems]="publicEventsTotalCount"
+        [pageSize]="publicEventsPageSize"
+        (pageChange)="onPublicEventsPageChange($event)">
+      </app-pagination>
+    </div>
+
+    <!-- Registered Events -->
+    <div *ngIf="activeTab === 'registered-events'" class="events-section">
+      <div class="section-header">
+        <h2>Registered Events</h2>
+        <p>Events you have registered for</p>
+        
+        <!-- Export buttons for Registered Events -->
+        <app-export-buttons 
+          *ngIf="registeredEventsTotalCount > 0"
+          label="Export Registered Events"
+          (exportCsv)="exportRegisteredEventsToCSV()"
+          (exportExcel)="exportRegisteredEventsToExcel()">
+        </app-export-buttons>
+      </div>
+      
+      <div *ngIf="allEventsLoading" class="loading">
+        <i class="fas fa-spinner fa-spin"></i> Loading events...
+      </div>
+      
+      <div *ngIf="!allEventsLoading && registeredEvents.length === 0" class="empty-state">
+        <i class="fas fa-calendar-check"></i>
+        <h3>You haven't registered for any events</h3>
+        <p>Explore public events and register to participate</p>
+        <button class="btn btn-primary" (click)="onTabChange('public-events')">
+          View public events
+        </button>
+      </div>
+      
+      <div *ngIf="!allEventsLoading && registeredEvents.length > 0" class="events-grid">
+        <div *ngFor="let event of registeredEvents" class="event-card registered-event" (click)="onEventClick(event.id)">
+          <div class="event-header">
+            <h3>{{ event.title }}</h3>
+            <span class="event-status registered">Registered</span>
+          </div>
+          <p class="event-description">{{ event.description }}</p>
+          <div class="event-details">
+            <div class="event-date">
+              <i class="fas fa-clock"></i>
+              {{ formatDate(event.eventDate) }}
+            </div>
+            <div class="event-creator">
+              <i class="fas fa-user"></i>
+              {{ event.createdByName }}
+            </div>
+            <div class="event-capacity">
+              <i class="fas fa-users"></i>
+              {{ event.registrationsCount }}/{{ event.capacity }} registered
+            </div>
+          </div>
+          <div class="event-categories" *ngIf="event.categories.length > 0">
+            <span *ngFor="let category of event.categories" 
+                  class="category-tag" 
+                  [style.background-color]="category.color">
+              {{ category.name }}
+            </span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Pagination for registered events -->
+      <app-pagination 
+        *ngIf="!allEventsLoading && registeredEvents.length > 0"
+        [currentPage]="registeredEventsPage"
+        [totalItems]="registeredEventsTotalCount"
+        [pageSize]="registeredEventsPageSize"
+        (pageChange)="onRegisteredEventsPageChange($event)">
+      </app-pagination>
+    </div>
+  </div>
+</div> 

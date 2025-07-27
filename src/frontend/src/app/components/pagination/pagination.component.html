@@ -1,0 +1,33 @@
+<div class="pagination-container" *ngIf="totalPages > 1">
+  <div class="pagination-info">
+    Showing {{ (currentPage - 1) * pageSize + 1 }} - {{ Math.min(currentPage * pageSize, totalItems) }} of {{ totalItems }} items
+  </div>
+  
+  <div class="pagination-controls">
+    <button 
+      class="pagination-btn" 
+      [disabled]="currentPage === 1"
+      (click)="onPrevious()">
+      <i class="fas fa-chevron-left"></i>
+      Previous
+    </button>
+    
+    <div class="page-numbers">
+      <button 
+        *ngFor="let page of pages" 
+        class="page-btn" 
+        [class.active]="page === currentPage"
+        (click)="onPageChange(page)">
+        {{ page }}
+      </button>
+    </div>
+    
+    <button 
+      class="pagination-btn" 
+      [disabled]="currentPage === totalPages"
+      (click)="onNext()">
+      Next
+      <i class="fas fa-chevron-right"></i>
+    </button>
+  </div>
+</div> 

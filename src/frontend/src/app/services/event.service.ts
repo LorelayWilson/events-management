@@ -3,6 +3,10 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { AuthService } from './auth.service';
 
+export interface PaginatedResult<T> {
+  items: T[];
+  totalCount: number;
+}
 export interface EventDto {
   id: number;
   title: string;
@@ -58,16 +62,20 @@ export class EventService {
     });
   }
 
-  getEvents(): Observable<EventDto[]> {
-    return this.http.get<EventDto[]>(`${this.API_URL}/events`, {
-      headers: this.getHeaders()
-    });
+  getEvents(page = 1, pageSize = 10, searchTerm?: string): Observable<PaginatedResult<EventDto>> {
+    let url = `${this.API_URL}/events?page=${page}&pageSize=${pageSize}`;
+    if (searchTerm && searchTerm.trim()) {
+      url += `&search=${encodeURIComponent(searchTerm.trim())}`;
+    }
+    return this.http.get<PaginatedResult<EventDto>>(url, { headers: this.getHeaders() });
   }
 
-  getEventsByCategory(categoryId: number): Observable<EventDto[]> {
-    return this.http.get<EventDto[]>(`${this.API_URL}/events/categories/${categoryId}`, {
-      headers: this.getHeaders()
-    });
+  getEventsByCategory(categoryId: number, page = 1, pageSize = 10, searchTerm?: string): Observable<PaginatedResult<EventDto>> {
+    let url = `${this.API_URL}/events/categories/${categoryId}?page=${page}&pageSize=${pageSize}`;
+    if (searchTerm && searchTerm.trim()) {
+      url += `&search=${encodeURIComponent(searchTerm.trim())}`;
+    }
+    return this.http.get<PaginatedResult<EventDto>>(url, { headers: this.getHeaders() });
   }
 
   getEvent(id: number): Observable<EventDto> {

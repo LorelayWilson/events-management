@@ -64,7 +64,7 @@ namespace EventsSystem.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<LoginResponseDto>> Login(LoginDto loginDto)
         {
-            _logger.LogInformation($"Login attempt for {loginDto.Email} with password: {loginDto.Password}");
+            _logger.LogInformation($"Login attempt for {loginDto.Email}");
 
             var user = await _userManager.FindByEmailAsync(loginDto.Email);
             if (user == null)
@@ -76,7 +76,7 @@ namespace EventsSystem.Controllers
             var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
             if (!result.Succeeded)
             {
-                _logger.LogWarning($"Login failed for {loginDto.Email}: Invalid password '{loginDto.Password}'");
+                _logger.LogWarning($"Login failed for {loginDto.Email}'");
                 return Unauthorized("Invalid credentials");
             }
 

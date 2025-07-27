@@ -1,0 +1,19 @@
+<div class="export-buttons" *ngIf="showButtons">
+  <span class="export-label" *ngIf="showLabel">{{ label }}:</span>
+  <button 
+    class="btn btn-outline-primary" 
+    [class]="buttonClass"
+    [disabled]="csvDisabled"
+    [title]="csvTooltip"
+    (click)="onExportCsv()">
+    📊 CSV
+  </button>
+  <button 
+    class="btn btn-outline-success" 
+    [class]="buttonClass"
+    [disabled]="excelDisabled"
+    [title]="excelTooltip"
+    (click)="onExportExcel()">
+    📈 Excel
+  </button>
+</div> 

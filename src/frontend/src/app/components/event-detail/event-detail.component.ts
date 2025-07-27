@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { EventService, EventDto } from '../services/event.service';
-import { AuthService } from '../services/auth.service';
+import { EventService, EventDto } from '../../services/event.service';
+import { AuthService } from '../../services/auth.service';
+import { ExportService } from '../../services/export.service';
 
 @Component({
   selector: 'app-event-detail',
@@ -17,7 +18,8 @@ export class EventDetailComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private eventService: EventService,
-    public authService: AuthService
+    public authService: AuthService,
+    private exportService: ExportService
   ) {}
 
   ngOnInit() {
@@ -101,6 +103,19 @@ export class EventDetailComponent implements OnInit {
            !this.event.isRegistered && 
            !this.isEventFull() && 
            !this.isEventPast();
+  }
+
+  // EXPORT METHODS
+  exportEventToCSV() {
+    if (this.event) {
+      this.exportService.exportEventToCSV(this.event);
+    }
+  }
+
+  exportEventToExcel() {
+    if (this.event) {
+      this.exportService.exportEventToExcel(this.event);
+    }
   }
 
 }
