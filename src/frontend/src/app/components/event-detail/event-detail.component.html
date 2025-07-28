@@ -15,7 +15,17 @@
   <div *ngIf="event && !loading && !error" class="event-detail">
     <div class="event-header">
       <div class="event-title-section">
-        <h1>{{ event.title }}</h1>
+        <div class="title-export-row">
+          <h1>{{ event.title }}</h1>
+          <div class="export-buttons">
+            <app-export-buttons 
+              label="Export Event"
+              theme="light"
+              (exportCsv)="exportEventToCSV()"
+              (exportExcel)="exportEventToExcel()">
+            </app-export-buttons>
+          </div>
+        </div>
         <div class="event-meta">
           <span class="event-date">📅 {{ event.eventDate | date:'full' }}</span>
           <span class="event-creator">👤 Created by {{ event.createdByName }}</span>
@@ -34,6 +44,12 @@
                   (click)="registerForEvent()">
             Register for Event
           </button>
+
+          <button *ngIf="canUnregister()"
+                  class="btn btn-danger"
+                  (click)="unregisterFromEvent()">
+            Cancel Registration
+          </button>
           
           <span *ngIf="event.isRegistered" class="registered-badge">
             ✅ You're Registered
@@ -46,14 +62,6 @@
           <span *ngIf="isEventPast()" class="past-badge">
             ⏰ Event Ended
           </span>
-        </div>
-        
-        <div class="export-buttons">
-          <app-export-buttons 
-            label="Export Event"
-            (exportCsv)="exportEventToCSV()"
-            (exportExcel)="exportEventToExcel()">
-          </app-export-buttons>
         </div>
       </div>
     </div>
@@ -71,6 +79,7 @@
             <span *ngFor="let category of event.categories" 
                   class="category-badge"
                   [style.background-color]="category.color">
+              <span class="category-icon">{{ category.icon }}</span>
               {{ category.name }}
             </span>
           </div>
@@ -84,6 +93,11 @@
           <div class="info-item">
             <strong>Date & Time:</strong>
             <span>{{ event.eventDate | date:'medium' }}</span>
+          </div>
+          
+          <div class="info-item" *ngIf="event.address">
+            <strong>Address:</strong>
+            <span>{{ event.address }}</span>
           </div>
           
           <div class="info-item">

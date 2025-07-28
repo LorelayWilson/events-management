@@ -1,0 +1,23 @@
+<div class="search-container">
+  <div class="search-input-group">
+    <div class="search-icon">
+      <i class="fas fa-search"></i>
+    </div>
+    <input
+      type="text"
+      class="form-control search-input"
+      placeholder="Buscar eventos..."
+      [formControl]="searchControl"
+      aria-label="Buscar eventos"
+    />
+    <button
+      *ngIf="searchTerm"
+      type="button"
+      class="btn btn-link clear-btn"
+      (click)="clearSearch()"
+      aria-label="Limpiar búsqueda"
+    >
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+</div> 

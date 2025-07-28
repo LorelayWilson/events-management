@@ -48,7 +48,16 @@
                  placeholder="Max attendees">
         </div>
       </div>
-
+      
+      <div class="form-group">
+        <label for="address">Address</label>
+        <input type="text"
+               id="address"
+               name="address"
+               [(ngModel)]="eventData.address"
+               class="form-control"
+               placeholder="Event location (optional)">
+      </div>
       <!-- Hidden field for createdById -->
       <input type="hidden" 
              name="createdById"
@@ -89,6 +98,7 @@
                    class="category-label"
                    [style.border-color]="category.color">
               <span class="category-color" [style.background-color]="category.color"></span>
+              <span class="category-icon">{{ category.icon }}</span>
               {{ category.name }}
             </label>
           </div>

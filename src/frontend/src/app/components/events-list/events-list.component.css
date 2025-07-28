@@ -41,9 +41,10 @@
   border: 1px solid #2196f3;
   border-radius: 20px;
   padding: 8px 15px;
-  margin-bottom: 15px;
+  margin-top: 15px;
   font-size: 14px;
   color: #1976d2;
+  justify-content: center;
 }
 
 .search-indicator i {
@@ -66,6 +67,60 @@
   color: white;
 }
 
+/* Export Section Styles */
+.export-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.export-buttons-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.export-buttons-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background-color: transparent;
+  border: 1px solid #d1d5db;
+  min-width: 200px;
+}
+
+.current-page-group {
+  background-color: transparent;
+  border-color: #d1d5db;
+}
+
+.all-events-group {
+  background-color: transparent;
+  border-color: #d1d5db;
+}
+
+.export-label {
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 500;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.current-page-group .export-label {
+  color: #666;
+  font-weight: 500;
+}
+
+.all-events-group .export-label {
+  color: #666;
+  font-weight: 500;
+}
+
 .export-buttons {
   display: flex;
   flex-direction: column;
@@ -77,13 +132,6 @@
   display: flex;
   gap: 6px;
   align-items: center;
-}
-
-.export-label {
-  font-size: 11px;
-  color: #666;
-  font-weight: 500;
-  margin-right: 4px;
 }
 
 .filter-section {
@@ -178,6 +226,13 @@
   border-radius: 12px;
   font-size: 10px;
   font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.category-icon {
+  font-size: 12px;
 }
 
 .event-actions {
@@ -271,6 +326,48 @@
     gap: 8px;
     text-align: center;
     padding: 10px;
+    margin-top: 10px;
+  }
+  
+  .export-section {
+    align-items: center;
+  }
+  
+  .export-labels-row {
+    flex-direction: row;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .export-buttons-row {
+    flex-direction: row;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .export-buttons-group {
+    gap: 6px;
+    padding: 8px 12px;
+    min-width: auto;
+    width: auto;
+    max-width: none;
+  }
+  
+  .current-page-group {
+    background-color: transparent;
+    border-color: #d1d5db;
+  }
+  
+  .all-events-group {
+    background-color: transparent;
+    border-color: #d1d5db;
+  }
+  
+  .export-label {
+    font-size: 0.75rem;
+    white-space: nowrap;
   }
   
   .export-buttons {
@@ -281,10 +378,6 @@
     flex-direction: column;
     align-items: center;
     gap: 4px;
-  }
-  
-  .export-label {
-    font-size: 10px;
   }
   
   .filter-section {

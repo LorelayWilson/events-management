@@ -102,6 +102,7 @@
             <span *ngFor="let category of event.categories" 
                   class="category-tag" 
                   [style.background-color]="category.color">
+              <span class="category-icon">{{ category.icon }}</span>
               {{ category.name }}
             </span>
           </div>
@@ -168,6 +169,7 @@
             <span *ngFor="let category of event.categories" 
                   class="category-tag" 
                   [style.background-color]="category.color">
+              <span class="category-icon">{{ category.icon }}</span>
               {{ category.name }}
             </span>
           </div>
@@ -245,8 +247,15 @@
             <span *ngFor="let category of event.categories" 
                   class="category-tag" 
                   [style.background-color]="category.color">
+              <span class="category-icon">{{ category.icon }}</span>
               {{ category.name }}
             </span>
+          </div>
+          <div class="event-actions">
+            <button class="btn btn-danger btn-sm"
+                    (click)="cancelRegistration(event.id); $event.stopPropagation()">
+              <i class="fas fa-times"></i> Cancel
+            </button>
           </div>
         </div>
       </div>

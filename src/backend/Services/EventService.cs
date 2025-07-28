@@ -10,10 +10,13 @@ namespace EventsSystem.Services
     {
         Task<PaginatedResult<EventDto>> GetAllEventsAsync(string? currentUserId = null, int page = 1, int pageSize = 20);
         Task<PaginatedResult<EventDto>> GetEventsByCategoryAsync(int categoryId, string? currentUserId = null, int page = 1, int pageSize = 20);
+        Task<PaginatedResult<EventDto>> GetEventsByUserAsync(string userId, string? currentUserId = null, int page = 1, int pageSize = 20);
         Task<EventDto?> GetEventByIdAsync(int id, string? currentUserId = null);
         Task<List<CategoryDto>> GetCategoriesAsync();
         Task<EventDto> CreateEventAsync(CreateEventDto createEventDto, string? currentUserId = null);
         Task<bool> RegisterForEventAsync(RegisterEventDto registerDto, string? currentUserId = null);
+        Task<bool> UnregisterFromEventAsync(int eventId, string? currentUserId = null);
+
     }
 
     public class EventService : IEventService
@@ -112,6 +115,36 @@ namespace EventsSystem.Services
                 TotalCount = totalCount
             };
         }
+        public async Task<PaginatedResult<EventDto>> GetEventsByUserAsync(string userId, string? currentUserId = null, int page = 1, int pageSize = 20)
+        {
+            var query = _context.Events
+                .AsNoTracking()
+                .Include(e => e.CreatedBy)
+                .Include(e => e.Registrations)
+                .Include(e => e.EventCategories).ThenInclude(ec => ec.Category)
+                .Where(e => e.CreatedById == userId)
+                .AsQueryable();
+
+            if (string.IsNullOrEmpty(currentUserId) || currentUserId != userId)
+            {
+                query = query.Where(e => !e.IsPrivate || e.Registrations.Any(r => r.UserId == currentUserId));
+            }
+
+            var totalCount = await query.CountAsync();
+            var events = await query
+                .OrderByDescending(e => e.EventDate)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var dtos = events.Select(e => MapToEventDto(e, currentUserId)).ToList();
+
+            return new PaginatedResult<EventDto>
+            {
+                Items = dtos,
+                TotalCount = totalCount
+            };
+        }
         private async Task<EventDto> MapToEventDtoWithCategoryIncluded(Event eventEntity, string? currentUserId)
         {
             var registrations = await _context.Registrations
@@ -138,6 +171,7 @@ namespace EventsSystem.Services
                 EventDate = eventEntity.EventDate,
                 Capacity = eventEntity.Capacity,
                 IsPrivate = eventEntity.IsPrivate,
+                Address = eventEntity.Address,
                 CreatedAt = eventEntity.CreatedAt,
                 CreatedById = eventEntity.CreatedById,
                 CreatedByName = $"{eventEntity.CreatedBy?.FirstName} {eventEntity.CreatedBy?.LastName}".Trim(),
@@ -146,7 +180,8 @@ namespace EventsSystem.Services
                 {
                     Id = ec.Category.Id,
                     Name = ec.Category.Name,
-                    Color = ec.Category.Color
+                    Color = ec.Category.Color,
+                    Icon = ec.Category.Icon
                 }).ToList(),
                 IsRegistered = isRegistered
             };
@@ -184,7 +219,8 @@ namespace EventsSystem.Services
             {
                 Id = c.Id,
                 Name = c.Name,
-                Color = c.Color
+                Color = c.Color,
+                Icon = c.Icon
             }).ToList();
         }
 
@@ -197,6 +233,7 @@ namespace EventsSystem.Services
                 EventDate = createEventDto.EventDate,
                 Capacity = createEventDto.Capacity,
                 IsPrivate = createEventDto.IsPrivate,
+                Address = createEventDto.Address,
                 CreatedById = createEventDto.CreatedById ?? currentUserId ?? "anonymous"
             };
 
@@ -260,6 +297,23 @@ namespace EventsSystem.Services
             return true;
         }
 
+        public async Task<bool> UnregisterFromEventAsync(int eventId, string? currentUserId = null)
+        {
+            var registration = await _context.Registrations
+                .FirstOrDefaultAsync(r => r.EventId == eventId && r.UserId == currentUserId);
+
+            if (registration == null)
+            {
+                _logger.LogWarning("Attempt to unregister non-existent registration for event {EventId}", eventId);
+                return false;
+            }
+
+            _context.Registrations.Remove(registration);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
         private EventDto MapToEventDto(Event eventEntity, string? currentUserId)
         {
             return new EventDto
@@ -270,6 +324,7 @@ namespace EventsSystem.Services
                 EventDate = eventEntity.EventDate,
                 Capacity = eventEntity.Capacity,
                 IsPrivate = eventEntity.IsPrivate,
+                Address = eventEntity.Address,
                 CreatedAt = eventEntity.CreatedAt,
                 CreatedById = eventEntity.CreatedById,
                 CreatedByName = $"{eventEntity.CreatedBy?.FirstName} {eventEntity.CreatedBy?.LastName}".Trim(),
@@ -278,7 +333,8 @@ namespace EventsSystem.Services
                 {
                     Id = ec.Category.Id,
                     Name = ec.Category.Name,
-                    Color = ec.Category.Color
+                    Color = ec.Category.Color,
+                    Icon = ec.Category.Icon
                 }).ToList(),
                 IsRegistered = !string.IsNullOrEmpty(currentUserId) && 
                               eventEntity.Registrations.Any(r => r.UserId == currentUserId)

@@ -15,6 +15,7 @@ const routes: Routes = [
   { path: 'register', component: RegisterComponent },
   { path: 'create-event', component: CreateEventComponent },
   { path: 'profile', component: UserProfileComponent },
+  { path: 'users/:id/events', component: UserEventsComponent },
   { path: '**', redirectTo: '/events' }
 ];
 

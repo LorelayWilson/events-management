@@ -63,9 +63,9 @@ export class ExportService {
    */
   private convertEventToCSV(event: EventDto): string {
     const headers = [
-      'ID', 'Title', 'Description', 'Event Date', 'Capacity', 
-      'Registrations Count', 'Available Spots', 'Is Private', 
-      'Created By', 'Created At', 'Categories'
+      'ID', 'Title', 'Description', 'Event Date', 'Capacity',
+      'Registrations Count', 'Available Spots', 'Is Private',
+      'Address', 'Created By', 'Created At', 'Categories'
     ];
 
     const values = [
@@ -77,6 +77,7 @@ export class ExportService {
       event.registrationsCount,
       event.capacity - event.registrationsCount,
       event.isPrivate ? 'Yes' : 'No',
+      event.address ?? '',
       event.createdByName,
       new Date(event.createdAt).toLocaleString(),
       `"${event.categories.map(c => c.name).join(', ')}"`
@@ -90,9 +91,9 @@ export class ExportService {
    */
   private convertEventsToCSV(events: EventDto[]): string {
     const headers = [
-      'ID', 'Title', 'Description', 'Event Date', 'Capacity', 
-      'Registrations Count', 'Available Spots', 'Is Private', 
-      'Created By', 'Created At', 'Categories'
+      'ID', 'Title', 'Description', 'Event Date', 'Capacity',
+      'Registrations Count', 'Available Spots', 'Is Private',
+      'Address', 'Created By', 'Created At', 'Categories'
     ];
 
     const rows = events.map(event => [
@@ -104,6 +105,7 @@ export class ExportService {
       event.registrationsCount,
       event.capacity - event.registrationsCount,
       event.isPrivate ? 'Yes' : 'No',
+      event.address ?? '',
       event.createdByName,
       new Date(event.createdAt).toLocaleString(),
       `"${event.categories.map(c => c.name).join(', ')}"`
@@ -127,6 +129,7 @@ export class ExportService {
       ['Registrations Count', event.registrationsCount],
       ['Available Spots', event.capacity - event.registrationsCount],
       ['Is Private', event.isPrivate ? 'Yes' : 'No'],
+      ['Address', event.address ?? ''],
       ['Created By', event.createdByName],
       ['Created At', new Date(event.createdAt).toLocaleString()],
       ['Categories', event.categories.map(c => c.name).join(', ')],
@@ -147,9 +150,9 @@ export class ExportService {
    */
   private convertEventsToWorksheet(events: EventDto[]): XLSX.WorkSheet {
     const headers = [
-      'ID', 'Title', 'Description', 'Event Date', 'Capacity', 
-      'Registrations Count', 'Available Spots', 'Is Private', 
-      'Created By', 'Created At', 'Categories'
+      'ID', 'Title', 'Description', 'Event Date', 'Capacity',
+      'Registrations Count', 'Available Spots', 'Is Private',
+      'Address', 'Created By', 'Created At', 'Categories'
     ];
 
     const data = [
@@ -163,6 +166,7 @@ export class ExportService {
         event.registrationsCount,
         event.capacity - event.registrationsCount,
         event.isPrivate ? 'Yes' : 'No',
+        event.address ?? '',
         event.createdByName,
         new Date(event.createdAt).toLocaleString(),
         event.categories.map(c => c.name).join(', ')

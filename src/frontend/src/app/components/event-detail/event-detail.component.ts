@@ -80,6 +80,30 @@ export class EventDetailComponent implements OnInit {
     });
   }
 
+  unregisterFromEvent() {
+    if (!this.event || !this.authService.isLoggedIn()) {
+      alert('Please log in to unregister from events');
+      return;
+    }
+
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser) {
+      alert('Please log in to unregister from events');
+      return;
+    }
+
+    this.eventService.unregisterFromEvent(this.event.id, currentUser.userId).subscribe({
+      next: () => {
+        alert('Successfully unregistered from event');
+        this.loadEvent(this.event!.id);
+      },
+      error: (error) => {
+        alert('Failed to unregister from event');
+        console.error('Error unregistering from event:', error);
+      }
+    });
+  }
+
   goBack() {
     this.router.navigate(['/events']);
   }
@@ -100,9 +124,15 @@ export class EventDetailComponent implements OnInit {
   canRegister(): boolean {
     return this.authService.isLoggedIn() && 
            this.event !== null &&
-           !this.event.isRegistered && 
-           !this.isEventFull() && 
+           !this.event.isRegistered &&
+           !this.isEventFull() &&
            !this.isEventPast();
+  }
+
+  canUnregister(): boolean {
+    return this.authService.isLoggedIn() &&
+           this.event !== null &&
+           this.event.isRegistered;
   }
 
   // EXPORT METHODS

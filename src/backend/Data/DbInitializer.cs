@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using EventsSystem.Models;
 
 namespace EventsSystem.Data
@@ -7,6 +7,9 @@ namespace EventsSystem.Data
     {
         public static async Task SeedAsync(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
+
+            // Recreate database to apply any model changes
+            await context.Database.EnsureDeletedAsync();
             // Ensure database is created
             await context.Database.EnsureCreatedAsync();
 
@@ -55,12 +58,12 @@ namespace EventsSystem.Data
             // Create categories
             var categories = new List<Category>
             {
-                new Category { Name = "Technology", Color = "#3B82F6" },
-                new Category { Name = "Business", Color = "#EF4444" },
-                new Category { Name = "Health & Wellness", Color = "#10B981" },
-                new Category { Name = "Education", Color = "#F59E0B" },
-                new Category { Name = "Entertainment", Color = "#8B5CF6" },
-                new Category { Name = "Sports", Color = "#F97316" }
+                new Category { Name = "Technology", Color = "#3B82F6", Icon = "💻" },
+                new Category { Name = "Business", Color = "#EF4444", Icon = "💼" },
+                new Category { Name = "Health & Wellness", Color = "#10B981", Icon = "🏥" },
+                new Category { Name = "Education", Color = "#F59E0B", Icon = "🎓" },
+                new Category { Name = "Entertainment", Color = "#8B5CF6", Icon = "🎬" },
+                new Category { Name = "Sports", Color = "#F97316", Icon = "🏅" }
             };
 
             context.Categories.AddRange(categories);
@@ -88,6 +91,7 @@ namespace EventsSystem.Data
                     EventDate = DateTime.UtcNow.AddDays(random.Next(1, 60)),
                     Capacity = random.Next(10, 100),
                     IsPrivate = isPrivate,
+                    Address = $"{random.Next(100, 999)} Main St, Sample City",
                     CreatedById = creator!.Id,
                     CreatedAt = DateTime.UtcNow.AddDays(-random.Next(1, 30))
                 });

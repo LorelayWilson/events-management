@@ -105,6 +105,10 @@ textarea.form-control {
   border-radius: 50%;
 }
 
+.category-icon {
+  font-size: 16px;
+}
+
 .form-actions {
   display: flex;
   gap: 15px;

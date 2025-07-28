@@ -14,6 +14,8 @@ export class ExportButtonsComponent {
   @Input() excelTooltip: string = 'Export to Excel';
   @Input() showLabel: boolean = true;
   @Input() buttonSize: 'sm' | 'md' | 'lg' = 'sm';
+  @Input() theme: 'default' | 'light' = 'default';
+  @Input() compact: boolean = false;
   
   @Output() exportCsv = new EventEmitter<void>();
   @Output() exportExcel = new EventEmitter<void>();
@@ -32,5 +34,13 @@ export class ExportButtonsComponent {
 
   get buttonClass(): string {
     return `btn-${this.buttonSize}`;
+  }
+
+  get containerClass(): string {
+    let baseClass = this.theme === 'light' ? 'export-buttons-light' : 'export-buttons';
+    if (this.compact) {
+      baseClass += ' export-compact';
+    }
+    return baseClass;
   }
 } 

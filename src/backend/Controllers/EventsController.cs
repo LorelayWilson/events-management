@@ -96,6 +96,24 @@ namespace EventsSystem.Controllers
             return Ok();
         }
 
+        [HttpPost("{id}/unregister")]
+        [Authorize]
+        public async Task<ActionResult> UnregisterFromEvent(int id)
+        {
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var success = await _eventService.UnregisterFromEventAsync(id, currentUserId);
+
+            if (!success)
+            {
+                return BadRequest("Unregistration failed");
+            }
+
+            _logger.LogInformation($"User {currentUserId ?? "anonymous"} unregistered from event {id}");
+
+            return Ok();
+        }
+
 
     }
 }

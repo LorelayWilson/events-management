@@ -1,19 +1,27 @@
-<div class="export-buttons" *ngIf="showButtons">
-  <span class="export-label" *ngIf="showLabel">{{ label }}:</span>
-  <button 
-    class="btn btn-outline-primary" 
-    [class]="buttonClass"
-    [disabled]="csvDisabled"
-    [title]="csvTooltip"
-    (click)="onExportCsv()">
-    📊 CSV
-  </button>
-  <button 
-    class="btn btn-outline-success" 
-    [class]="buttonClass"
-    [disabled]="excelDisabled"
-    [title]="excelTooltip"
-    (click)="onExportExcel()">
-    📈 Excel
-  </button>
+<div [class]="containerClass" *ngIf="showButtons">
+  <div class="export-section">
+    <div class="export-labels-row">
+      <span class="export-label" *ngIf="showLabel">{{ label }}:</span>
+    </div>
+    <div class="export-buttons-group">
+      <button 
+        class="btn btn-outline-primary export-btn" 
+        [class]="buttonClass"
+        [disabled]="csvDisabled"
+        [title]="csvTooltip"
+        (click)="onExportCsv()">
+        <span class="btn-icon">📊</span>
+        <span class="btn-text">CSV</span>
+      </button>
+      <button 
+        class="btn btn-outline-success export-btn" 
+        [class]="buttonClass"
+        [disabled]="excelDisabled"
+        [title]="excelTooltip"
+        (click)="onExportExcel()">
+        <span class="btn-icon">📈</span>
+        <span class="btn-text">Excel</span>
+      </button>
+    </div>
+  </div>
 </div> 

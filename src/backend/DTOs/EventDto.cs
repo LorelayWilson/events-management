@@ -8,6 +8,8 @@ namespace EventsSystem.DTOs
         public DateTime EventDate { get; set; }
         public int Capacity { get; set; }
         public bool IsPrivate { get; set; }
+        public string? Address { get; set; }
+
         public DateTime CreatedAt { get; set; }
         public string CreatedById { get; set; } = string.Empty;
         public string CreatedByName { get; set; } = string.Empty;
@@ -23,6 +25,7 @@ namespace EventsSystem.DTOs
         public DateTime EventDate { get; set; }
         public int Capacity { get; set; }
         public bool IsPrivate { get; set; }
+        public string? Address { get; set; }
         public List<int> CategoryIds { get; set; } = new();
         
         public string? CreatedById { get; set; }
@@ -33,6 +36,7 @@ namespace EventsSystem.DTOs
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string Color { get; set; } = string.Empty;
+        public string Icon { get; set; } = string.Empty;
     }
 
     public class RegisterEventDto

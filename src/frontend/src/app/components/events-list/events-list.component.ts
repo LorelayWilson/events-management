@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { EventService, EventDto, CategoryDto, PaginatedResult } from '../../services/event.service';
 import { AuthService } from '../../services/auth.service';
 import { ExportService } from '../../services/export.service';
@@ -15,6 +15,7 @@ export class EventsListComponent implements OnInit {
   selectedCategoryId: number | null = null;
   loading = false;
   error: string | null = null;
+  isMobile = false;
 
   // PAGINATION
   currentPage = 1;
@@ -23,6 +24,7 @@ export class EventsListComponent implements OnInit {
   
   // SEARCH
   searchTerm: string = '';
+  allEvents: EventDto[] = []; // Para búsqueda del lado del cliente
 
   constructor(
     private eventService: EventService,
@@ -33,6 +35,7 @@ export class EventsListComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.checkScreenSize();
     this.loadEvents();
     this.loadCategories();
     
@@ -40,13 +43,27 @@ export class EventsListComponent implements OnInit {
     this.route.queryParams.subscribe(params => {
       this.searchTerm = params['search'] || '';
       this.currentPage = 1;
-      this.loadEvents();
+      
+      if (this.searchTerm && this.searchTerm.trim()) {
+        this.loadAllEventsForSearch();
+      } else {
+        this.loadEvents();
+      }
     });
     
     this.authService.currentUser$.subscribe(user => {
       // Reload events when user changes
       this.loadEvents();
     });
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize() {
+    this.checkScreenSize();
+  }
+
+  private checkScreenSize() {
+    this.isMobile = window.innerWidth <= 576;
   }
 
   loadEvents() {
@@ -95,13 +112,59 @@ export class EventsListComponent implements OnInit {
   onSearchChange(searchTerm: string) {
     this.searchTerm = searchTerm;
     this.currentPage = 1;
-    this.loadEvents();
+    
+    if (searchTerm && searchTerm.trim()) {
+      this.loadAllEventsForSearch();
+    } else {
+      this.loadEvents();
+    }
   }
 
   clearSearch() {
     this.searchTerm = '';
     this.currentPage = 1;
+    this.loadEvents(); // Volver a cargar eventos normales
     this.router.navigate(['/events']);
+  }
+
+  // CLIENT-SIDE SEARCH
+  private applyClientSideSearch(allEvents: EventDto[]) {
+    const searchTerm = this.searchTerm.toLowerCase().trim();
+    
+    this.events = allEvents.filter(event => {
+      const titleMatch = event.title.toLowerCase().includes(searchTerm);
+      const descMatch = event.description.toLowerCase().includes(searchTerm);
+      const creatorMatch = event.createdByName.toLowerCase().includes(searchTerm);
+      
+      return titleMatch || descMatch || creatorMatch;
+    });
+    
+    this.totalCount = this.events.length;
+  }
+
+  private loadAllEventsForSearch() {
+    this.loading = true;
+    this.error = null;
+
+    // Cargar todos los eventos (sin paginación) para búsqueda del lado del cliente
+    const callback = {
+      next: (result: PaginatedResult<EventDto>) => {
+        this.applyClientSideSearch(result.items);
+        this.loading = false;
+      },
+      error: (error: any) => {
+        this.error = 'Failed to load events for search';
+        this.loading = false;
+        console.error('Error loading events for search:', error);
+      }
+    };
+
+    // Cargar una cantidad grande de eventos para la búsqueda
+    if (this.selectedCategoryId) {
+      this.eventService.getEventsByCategory(this.selectedCategoryId, 1, 1000).subscribe(callback);
+    } else {
+      this.eventService.getEvents(1, 1000).subscribe(callback);
+    }
   }
 
   // PAGINATION METHODS
@@ -134,6 +197,30 @@ export class EventsListComponent implements OnInit {
       error: (error) => {
         alert('Failed to register for event');
         console.error('Error registering for event:', error);
+      }
+    });
+  }
+
+  unregisterFromEvent(eventId: number) {
+    if (!this.authService.isLoggedIn()) {
+      alert('Please log in to unregister from events');
+      return;
+    }
+
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser) {
+      alert('Please log in to unregister from events');
+      return;
+    }
+
+    this.eventService.unregisterFromEvent(eventId, currentUser.userId).subscribe({
+      next: () => {
+        alert('Successfully unregistered from event');
+        this.loadEvents();
+      },
+      error: (error) => {
+        alert('Failed to unregister from event');
+        console.error('Error unregistering from event:', error);
       }
     });
   }

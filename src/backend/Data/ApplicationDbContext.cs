@@ -26,6 +26,7 @@ namespace EventsSystem.Data
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
                 entity.Property(e => e.Description).HasMaxLength(2000);
+                entity.Property(e => e.Address).HasMaxLength(300);
                 entity.HasOne(e => e.CreatedBy)
                       .WithMany()
                       .HasForeignKey(e => e.CreatedById)

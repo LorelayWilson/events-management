@@ -14,6 +14,7 @@ export interface EventDto {
   eventDate: string;
   capacity: number;
   isPrivate: boolean;
+  address?: string;
   createdAt: string;
   createdById: string;
   createdByName: string;
@@ -28,6 +29,7 @@ export interface CreateEventDto {
   eventDate: string;
   capacity: number;
   isPrivate: boolean;
+  address?: string;
   categoryIds: number[];
   createdById?: string;
 }
@@ -36,6 +38,7 @@ export interface CategoryDto {
   id: number;
   name: string;
   color: string;
+  icon: string;
 }
 
 export interface RegisterEventDto {
@@ -103,6 +106,17 @@ export class EventService {
     };
     
     return this.http.post<void>(`${this.API_URL}/events/${eventId}/register`, registerData, {
+      headers: this.getHeaders()
+    });
+  }
+
+  unregisterFromEvent(eventId: number, userId: string): Observable<void> {
+    const unregisterData: RegisterEventDto = {
+      eventId: eventId,
+      userId: userId
+    };
+
+    return this.http.post<void>(`${this.API_URL}/events/${eventId}/unregister`, unregisterData, {
       headers: this.getHeaders()
     });
   }

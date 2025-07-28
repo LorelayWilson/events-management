@@ -2,28 +2,29 @@
   <div class="header-section">
     <h1>Events</h1>
     
-    <!-- Search indicator -->
-    <div *ngIf="searchTerm" class="search-indicator">
-      <i class="fas fa-search"></i>
-      <span>Searching for: "{{ searchTerm }}"</span>
-      <button class="btn btn-sm btn-outline-secondary" (click)="clearSearch()">
-        <i class="fas fa-times"></i> Clear
-      </button>
-    </div>
-    
     <div class="header-controls">
       <!-- Export buttons -->
-      <div class="export-buttons" *ngIf="events.length > 0">
-        <app-export-buttons 
-          label="Export Events (Current Page)"
-          (exportCsv)="exportAllEventsToCSV()"
-          (exportExcel)="exportAllEventsToExcel()">
-        </app-export-buttons>
-        <app-export-buttons 
-          label="Export All Events"
-          (exportCsv)="exportAllEventsToCSVComplete()"
-          (exportExcel)="exportAllEventsToExcelComplete()">
-        </app-export-buttons>
+      <div class="export-section" *ngIf="events.length > 0">
+        <div class="export-buttons-row">
+          <div class="export-buttons-group current-page-group">
+            <span class="export-label">Current Page:</span>
+            <app-export-buttons 
+              [showLabel]="false"
+              [compact]="isMobile"
+              (exportCsv)="exportAllEventsToCSV()"
+              (exportExcel)="exportAllEventsToExcel()">
+            </app-export-buttons>
+          </div>
+          <div class="export-buttons-group all-events-group">
+            <span class="export-label">All Events:</span>
+            <app-export-buttons 
+              [showLabel]="false"
+              [compact]="isMobile"
+              (exportCsv)="exportAllEventsToCSVComplete()"
+              (exportExcel)="exportAllEventsToExcelComplete()">
+            </app-export-buttons>
+          </div>
+        </div>
       </div>
       
       <!-- Category filter -->
@@ -35,10 +36,19 @@
                 class="form-select">
           <option [ngValue]="null">All Categories</option>
           <option *ngFor="let category of categories" [ngValue]="category.id">
-            {{ category.name }}
+            {{ category.icon }} {{ category.name }}
           </option>
         </select>
       </div>
+    </div>
+    
+    <!-- Search indicator -->
+    <div *ngIf="searchTerm" class="search-indicator">
+      <i class="fas fa-search"></i>
+      <span>Searching for: "{{ searchTerm }}"</span>
+      <button class="btn btn-sm btn-outline-secondary" (click)="clearSearch()">
+        <i class="fas fa-times"></i> Clear
+      </button>
     </div>
   </div>
 
@@ -73,6 +83,7 @@
           <span *ngFor="let category of event.categories" 
                 class="category-badge"
                 [style.background-color]="category.color">
+            <span class="category-icon">{{ category.icon }}</span>
             {{ category.name }}
           </span>
         </div>
@@ -80,13 +91,18 @@
       
       <div class="event-actions">
         <a [routerLink]="['/events', event.id]" class="btn btn-primary btn-sm">View Details</a>
-        <button *ngIf="authService.isLoggedIn() && !event.isRegistered" 
-                (click)="registerForEvent(event.id)"
-                class="btn btn-success btn-sm">
-          Register
-        </button>
-        <span *ngIf="event.isRegistered" class="registered-badge">Registered</span>
-      </div>
+      <button *ngIf="authService.isLoggedIn() && !event.isRegistered"
+              (click)="registerForEvent(event.id)"
+              class="btn btn-success btn-sm">
+        Register
+      </button>
+      <button *ngIf="authService.isLoggedIn() && event.isRegistered"
+              (click)="unregisterFromEvent(event.id)"
+              class="btn btn-danger btn-sm">
+        Cancel
+      </button>
+      <span *ngIf="event.isRegistered" class="registered-badge">Registered</span>
+    </div>
     </div>
   </div>
 

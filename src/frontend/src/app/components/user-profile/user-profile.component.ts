@@ -121,6 +121,21 @@ export class UserProfileComponent implements OnInit {
     this.registeredEvents = registeredEventsFiltered.slice(startIndex, endIndex);
   }
 
+  cancelRegistration(eventId: number): void {
+    if (!this.currentUser) return;
+
+    this.eventService.unregisterFromEvent(eventId, this.currentUser.userId).subscribe({
+      next: () => {
+        alert('Registration cancelled');
+        this.loadAllEvents();
+      },
+      error: (error) => {
+        console.error('Error cancelling registration:', error);
+        alert('Failed to cancel registration');
+      }
+    });
+  }
+
   onTabChange(tab: 'my-events' | 'public-events' | 'registered-events'): void {
     this.activeTab = tab;
   }

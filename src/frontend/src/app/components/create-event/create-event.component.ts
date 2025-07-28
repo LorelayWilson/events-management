@@ -16,7 +16,8 @@ export class CreateEventComponent implements OnInit {
     capacity: 10,
     isPrivate: false,
     categoryIds: [],
-    createdById: ''
+    createdById: '',
+    address: ''
   };
   
   categories: CategoryDto[] = [];
