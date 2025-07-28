@@ -75,7 +75,7 @@
         
         <div class="event-info">
           <span class="capacity">Capacity: {{ event.registrationsCount }}/{{ event.capacity }}</span>
-          <span class="creator">By: {{ event.createdByName }}</span>
+          <span class="creator">By: <a [routerLink]="['/users', event.createdById, 'events']">{{ event.createdByName }}</a></span>
           <span *ngIf="event.isPrivate" class="private-badge">Private</span>
         </div>
         
@@ -100,6 +100,11 @@
               (click)="unregisterFromEvent(event.id)"
               class="btn btn-danger btn-sm">
         Cancel
+      </button>
+      <button *ngIf="canDelete(event)"
+      (click)="deleteEvent(event.id)"
+      class="btn btn-warning btn-sm">
+        Delete
       </button>
       <span *ngIf="event.isRegistered" class="registered-badge">Registered</span>
     </div>

@@ -110,6 +110,13 @@ export class EventService {
     });
   }
 
+  getEventsByUser(userId: string, page = 1, pageSize = 10): Observable<PaginatedResult<EventDto>> {
+    return this.http.get<PaginatedResult<EventDto>>(
+      `${this.API_URL}/users/${userId}/events?page=${page}&pageSize=${pageSize}`,
+      { headers: this.getHeaders() }
+    );
+  }
+
   unregisterFromEvent(eventId: number, userId: string): Observable<void> {
     const unregisterData: RegisterEventDto = {
       eventId: eventId,
@@ -117,6 +124,12 @@ export class EventService {
     };
 
     return this.http.post<void>(`${this.API_URL}/events/${eventId}/unregister`, unregisterData, {
+      headers: this.getHeaders()
+    });
+  }
+
+  deleteEvent(eventId: number): Observable<void> {
+    return this.http.delete<void>(`${this.API_URL}/events/${eventId}`, {
       headers: this.getHeaders()
     });
   }

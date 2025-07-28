@@ -25,6 +25,13 @@ export interface LoginResponseDto {
   token: string;
 }
 
+export interface UserDto {
+  userId: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -92,5 +99,19 @@ export class AuthService {
 
   getToken(): string | null {
     return this.encryptionService.getDecryptedItem('token');
+  }
+
+  /**
+   * Get user information by ID
+   * Note: This endpoint might not be available in all backend implementations
+   * If the API returns 404, the frontend will handle it gracefully
+   */
+  getUserById(userId: string): Observable<UserDto> {
+    return this.http.get<UserDto>(`${this.API_URL}/users/${userId}`, {
+      headers: {
+        'Authorization': `Bearer ${this.getToken()}`,
+        'Content-Type': 'application/json'
+      }
+    });
   }
 }

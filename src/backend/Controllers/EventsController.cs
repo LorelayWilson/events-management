@@ -114,6 +114,24 @@ namespace EventsSystem.Controllers
             return Ok();
         }
 
+        [HttpDelete("{id}")]
+        [Authorize]
+        public async Task<ActionResult> DeleteEvent(int id)
+        {
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var success = await _eventService.DeleteEventAsync(id, currentUserId);
+
+            if (!success)
+            {
+                return BadRequest("Delete failed");
+            }
+
+            _logger.LogInformation($"User {currentUserId} deleted event {id}");
+
+            return NoContent();
+        }
+
 
     }
 }

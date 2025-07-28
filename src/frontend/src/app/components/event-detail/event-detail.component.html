@@ -28,7 +28,7 @@
         </div>
         <div class="event-meta">
           <span class="event-date">📅 {{ event.eventDate | date:'full' }}</span>
-          <span class="event-creator">👤 Created by {{ event.createdByName }}</span>
+          <span class="event-creator">👤 Created by <a [routerLink]="['/users', event.createdById, 'events']">{{ event.createdByName }}</a></span>
           <span *ngIf="event.isPrivate" class="private-badge">🔒 Private Event</span>
         </div>
       </div>
@@ -49,6 +49,12 @@
                   class="btn btn-danger"
                   (click)="unregisterFromEvent()">
             Cancel Registration
+          </button>
+
+          <button *ngIf="canDelete()"
+          class="btn btn-warning"
+          (click)="deleteEvent()">
+            Delete Event
           </button>
           
           <span *ngIf="event.isRegistered" class="registered-badge">

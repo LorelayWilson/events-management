@@ -90,6 +90,26 @@
   background: #218838;
 }
 
+.btn-warning {
+  background: #ffc107;
+  color: #212529;
+}
+
+.btn-warning:hover {
+  background: #e0a800;
+  transform: translateY(-2px);
+}
+
+.btn-danger {
+  background: #dc3545;
+  color: white;
+}
+
+.btn-danger:hover {
+  background: #c82333;
+  transform: translateY(-2px);
+}
+
 .btn-sm {
   padding: 8px 16px;
   font-size: 0.9rem;
@@ -378,6 +398,16 @@
   display: flex;
   justify-content: flex-end;
   margin-top: 15px;
+  gap: 10px;
+}
+
+.event-actions .btn {
+  transition: all 0.2s ease;
+}
+
+.event-actions .btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .registered-badge {

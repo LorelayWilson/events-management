@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { EventService, EventDto, PaginatedResult } from '../../services/event.service';
 import { AuthService, LoginResponseDto } from '../../services/auth.service';
 import { ExportService } from '../../services/export.service';
@@ -11,6 +11,9 @@ import { ExportService } from '../../services/export.service';
 })
 export class UserProfileComponent implements OnInit {
   currentUser: LoginResponseDto | null = null;
+  targetUser: LoginResponseDto | null = null;
+  targetUserId: string | null = null;
+  isOwnProfile = true;
   
   // All events loaded for filtering
   allEvents: EventDto[] = [];
@@ -40,7 +43,8 @@ export class UserProfileComponent implements OnInit {
     private eventService: EventService,
     private authService: AuthService,
     private exportService: ExportService,
-    public router: Router
+    public router: Router,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
@@ -50,7 +54,38 @@ export class UserProfileComponent implements OnInit {
       return;
     }
     
-    this.loadAllEvents();
+    // Check if we're viewing a specific user's events or our own profile
+    this.route.paramMap.subscribe(params => {
+      const userIdParam = params.get('id');
+      if (userIdParam) {
+        this.targetUserId = userIdParam;
+        this.isOwnProfile = this.currentUser?.userId === userIdParam;
+      } else {
+        this.targetUserId = this.currentUser?.userId || null;
+        this.isOwnProfile = true;
+      }
+      
+      // Set target user based on context
+      if (this.isOwnProfile) {
+        this.targetUser = this.currentUser;
+      } else {
+        // For other users, we'll get the name from the events data
+        this.targetUser = {
+          userId: this.targetUserId!,
+          firstName: 'User',
+          lastName: this.targetUserId!.substring(0, 8),
+          email: 'user@example.com',
+          token: ''
+        };
+      }
+      
+      this.updateMyEventsPage();
+      
+      // Only load all events for filtering if it's the user's own profile
+      if (this.isOwnProfile) {
+        this.loadAllEvents();
+      }
+    });
   }
 
   loadAllEvents(): void {
@@ -72,13 +107,6 @@ export class UserProfileComponent implements OnInit {
   filterAndPaginateEvents(): void {
     if (!this.currentUser) return;
 
-    // Filter my events
-    const myEventsFiltered = this.allEvents.filter(event => 
-      event.createdById === this.currentUser!.userId
-    );
-    this.myEventsTotalCount = myEventsFiltered.length;
-    this.updateMyEventsPage();
-
     // Filter public events
     const publicEventsFiltered = this.allEvents.filter(event => 
       !event.isPrivate && event.createdById !== this.currentUser!.userId
@@ -94,13 +122,36 @@ export class UserProfileComponent implements OnInit {
     this.updateRegisteredEventsPage();
   }
 
+
+
   updateMyEventsPage(): void {
-    const startIndex = (this.myEventsPage - 1) * this.myEventsPageSize;
-    const endIndex = startIndex + this.myEventsPageSize;
-    const myEventsFiltered = this.allEvents.filter(event => 
-      event.createdById === this.currentUser!.userId
-    );
-    this.myEvents = myEventsFiltered.slice(startIndex, endIndex);
+    if (!this.targetUserId) return;
+    this.eventService.getEventsByUser(this.targetUserId, this.myEventsPage, this.myEventsPageSize)
+      .subscribe({
+        next: (result: PaginatedResult<EventDto>) => {
+          this.myEvents = result.items;
+          this.myEventsTotalCount = result.totalCount;
+          
+          // Extract user name from the first event if available
+          if (!this.isOwnProfile && result.items.length > 0) {
+            const firstEvent = result.items[0];
+            if (firstEvent.createdByName) {
+              // Parse the full name into first and last name
+              const nameParts = firstEvent.createdByName.split(' ');
+              this.targetUser = {
+                userId: this.targetUserId!,
+                firstName: nameParts[0] || 'User',
+                lastName: nameParts.slice(1).join(' ') || this.targetUserId!.substring(0, 8),
+                email: 'user@example.com',
+                token: ''
+              };
+            }
+          }
+        },
+        error: (error) => {
+          console.error('Error loading user events:', error);
+        }
+      });
   }
 
   updatePublicEventsPage(): void {
@@ -136,8 +187,41 @@ export class UserProfileComponent implements OnInit {
     });
   }
 
+  canDelete(event: EventDto): boolean {
+    const currentUser = this.authService.getCurrentUser();
+    return this.authService.isLoggedIn() &&
+           currentUser !== null &&
+           event.createdById === currentUser.userId;
+  }
+
+  deleteEvent(eventId: number): void {
+    if (!this.currentUser) return;
+
+    if (!confirm('Are you sure you want to delete this event? This action cannot be undone.')) {
+      return;
+    }
+
+    this.eventService.deleteEvent(eventId).subscribe({
+      next: () => {
+        alert('Event deleted successfully');
+        this.loadAllEvents();
+      },
+      error: (error: any) => {
+        console.error('Error deleting event:', error);
+        alert('Failed to delete event');
+      }
+    });
+  }
+
   onTabChange(tab: 'my-events' | 'public-events' | 'registered-events'): void {
     this.activeTab = tab;
+    
+    // Load appropriate data based on tab
+    if (tab === 'public-events' && this.isOwnProfile) {
+      this.loadAllEvents();
+    } else if (tab === 'registered-events' && this.isOwnProfile) {
+      this.loadAllEvents();
+    }
   }
 
   onEventClick(eventId: number): void {

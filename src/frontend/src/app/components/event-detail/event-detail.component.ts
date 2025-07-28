@@ -104,6 +104,25 @@ export class EventDetailComponent implements OnInit {
     });
   }
 
+  deleteEvent() {
+    if (!this.event) return;
+
+    if (!confirm('Are you sure you want to delete this event? This action cannot be undone.')) {
+      return;
+    }
+
+    this.eventService.deleteEvent(this.event.id).subscribe({
+      next: () => {
+        alert('Event deleted');
+        this.router.navigate(['/events']);
+      },
+      error: (error) => {
+        alert('Failed to delete event');
+        console.error('Error deleting event:', error);
+      }
+    });
+  }
+
   goBack() {
     this.router.navigate(['/events']);
   }
@@ -133,6 +152,14 @@ export class EventDetailComponent implements OnInit {
     return this.authService.isLoggedIn() &&
            this.event !== null &&
            this.event.isRegistered;
+  }
+
+  canDelete(): boolean {
+    const currentUser = this.authService.getCurrentUser();
+    return this.authService.isLoggedIn() &&
+           this.event !== null &&
+           currentUser !== null &&
+           this.event.createdById === currentUser.userId;
   }
 
   // EXPORT METHODS

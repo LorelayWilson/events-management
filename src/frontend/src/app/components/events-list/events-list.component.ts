@@ -225,6 +225,28 @@ export class EventsListComponent implements OnInit {
     });
   }
 
+  canDelete(event: EventDto): boolean {
+    const currentUser = this.authService.getCurrentUser();
+    return this.authService.isLoggedIn() && currentUser !== null && event.createdById === currentUser.userId;
+  }
+
+  deleteEvent(eventId: number) {
+    if (!confirm('Are you sure you want to delete this event? This action cannot be undone.')) {
+      return;
+    }
+
+    this.eventService.deleteEvent(eventId).subscribe({
+      next: () => {
+        alert('Event deleted');
+        this.loadEvents();
+      },
+      error: (error) => {
+        alert('Failed to delete event');
+        console.error('Error deleting event:', error);
+      }
+    });
+  }
+
   // EXPORT METHODS
   exportAllEventsToCSV() {
     this.exportService.exportEventsToCSV(this.events);

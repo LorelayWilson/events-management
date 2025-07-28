@@ -16,6 +16,7 @@ namespace EventsSystem.Services
         Task<EventDto> CreateEventAsync(CreateEventDto createEventDto, string? currentUserId = null);
         Task<bool> RegisterForEventAsync(RegisterEventDto registerDto, string? currentUserId = null);
         Task<bool> UnregisterFromEventAsync(int eventId, string? currentUserId = null);
+        Task<bool> DeleteEventAsync(int eventId, string currentUserId);
 
     }
 
@@ -145,6 +146,8 @@ namespace EventsSystem.Services
                 TotalCount = totalCount
             };
         }
+
+
         private async Task<EventDto> MapToEventDtoWithCategoryIncluded(Event eventEntity, string? currentUserId)
         {
             var registrations = await _context.Registrations
@@ -309,6 +312,31 @@ namespace EventsSystem.Services
             }
 
             _context.Registrations.Remove(registration);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<bool> DeleteEventAsync(int eventId, string currentUserId)
+        {
+            var eventEntity = await _context.Events
+                .Include(e => e.Registrations)
+                .Include(e => e.EventCategories)
+                .FirstOrDefaultAsync(e => e.Id == eventId);
+
+            if (eventEntity == null)
+            {
+                _logger.LogWarning("Attempt to delete non-existent event {EventId}", eventId);
+                return false;
+            }
+
+            if (eventEntity.CreatedById != currentUserId)
+            {
+                _logger.LogWarning("User {UserId} attempted to delete event {EventId} they do not own", currentUserId, eventId);
+                return false;
+            }
+
+            _context.Events.Remove(eventEntity);
             await _context.SaveChangesAsync();
 
             return true;
